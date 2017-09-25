@@ -12,7 +12,10 @@ import java.util.Map;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -39,7 +42,7 @@ public class MyAccount {
 	
 	/*
 	 * This method checks if single MyAccount dropdown menu is present and after
-	 * clicking that menu, if the page loads or not
+	 * clicking that menu,checks if the page loads or not
 	 */
 	public String clickSingleMyAccountMenu(WebDriver webDriver, Map<String, Object> eachRowMap) {
 		String reportStatus = "";
@@ -53,9 +56,9 @@ public class MyAccount {
 		WebDriverWait wait = new WebDriverWait(webDriver, 60);
 
 		if (xLMyAccountMenuName.isEmpty()) {
-			errorDetails += Constants.FAIL + " MenuName xl input is blank.";
+			errorDetails += Constants.XL_EMPTY_ERROR+" MenuName xl input is blank."+Constants.HASH;
 		} else if (xLMyAccountPageTitle.isEmpty()) {
-			errorDetails += Constants.FAIL + " PageTitle xl input is blank.";
+			errorDetails += Constants.XL_EMPTY_ERROR+" PageTitle xl input is blank."+Constants.HASH;
 		} else {
 
 			try {
@@ -64,10 +67,9 @@ public class MyAccount {
 				try {
 					webDriver.findElement(By.id(xpathIDMap.get("MyAccountMenu_Id"))).click();
 				} catch (NoSuchElementException e) {
-					errorDetails += " Main MyAccount Menu  not found in index page. ";
+					errorDetails += " Main MyAccount Menu  not found in index page. "+Constants.HASH;
 					myAccountLinkFound = false;					
 					e.printStackTrace();
-
 				}
 
 				if (myAccountLinkFound == true) {
@@ -78,9 +80,9 @@ public class MyAccount {
 						// this function is called to close the ForeSee survey popup
 						webUtil.closeForeSeeSurveyPopup(webDriver);
 						
-					} catch (NoSuchElementException e) {
+					} catch (NoSuchElementException | TimeoutException e) {
 						
-						errorDetails += xLMyAccountMenuName + "  menu not found. ";
+						errorDetails += xLMyAccountMenuName + "  menu not found. "+Constants.HASH;
 						dropdownMenuNameFound = false;						
 						e.printStackTrace();
 					}
@@ -91,25 +93,20 @@ public class MyAccount {
 									.elementToBeClickable(By.className(xpathIDMap.get("MyAccountPageTitle_Class"))))
 									.getText();
 							if (!pageTitle.equals(xLMyAccountPageTitle))
-								errorDetails += xLMyAccountPageTitle + "  page not loaded. ";
-						} catch (NoSuchElementException e) {							
-							errorDetails += xLMyAccountPageTitle + "  page not loaded. ";							
+								errorDetails += xLMyAccountPageTitle + "  page not loaded. "+Constants.HASH;
+						} catch (NoSuchElementException | TimeoutException e) {							
+							errorDetails += xLMyAccountPageTitle + "  page not loaded. "+Constants.HASH;							
 							e.printStackTrace();
 						}
 					}
 				} // end  if
 
 			} catch (Exception e) {
-				errorDetails += xLMyAccountMenuName + Constants.UNEXPECTED_ERROR +". ";
+				errorDetails += xLMyAccountMenuName +"-"+ Constants.UNEXPECTED_ERROR +". "+Constants.HASH;
 				e.printStackTrace();
-			}
-
-			if (!errorDetails.isEmpty()) {
-				outputOp.saveScreenshotToFile(webDriver, eachRowMap);
-				reportStatus = Constants.FAIL + errorDetails + Constants.TAB;
-			} else {
-				reportStatus = Constants.PASS + "-";
-			}
+			}			
+			
+			reportStatus=outputOp.statusReporter(errorDetails, eachRowMap, webDriver);
 
 		} // end else
 
@@ -174,7 +171,7 @@ public class MyAccount {
 	public String clickAllMyAccountMenus(WebDriver webDriver, Map<String, Object> eachRowMap) {
 
 		String reportStatus = "";
-		String details = "";
+		String errorDetails = "";
 		Boolean reportFail = false;		
 		
 		
@@ -193,12 +190,12 @@ public class MyAccount {
 		// issues,then report it n take screenshot
 		if (!dissimilarMyAccountMenuList.isEmpty()) {
 			reportFail = true;
-			details+=dissimilarMyAccountMenuList.toString();
+			errorDetails+="Dissimilar MyAccountDropdown: "+dissimilarMyAccountMenuList.toString()+Constants.HASH;
 			// clicking main menu MyAccount on webpage, to display menus to take screenshot
 			try {
 				webDriver.findElement(By.id(xpathIDMap.get("MyAccountMenu_Id"))).click();
 			} catch (NoSuchElementException e) {				
-				details += "  Main MyAccount Menu  not found in index page. ";
+				errorDetails += "  Main MyAccount Menu  not found in index page. "+Constants.HASH;
 				e.printStackTrace();
 			}
 			outputOp.saveScreenshotToFile(webDriver, eachRowMap);
@@ -217,7 +214,7 @@ public class MyAccount {
 
 			if (xLMyAccountPageTitle.isEmpty()) {
 				reportFail = true;
-				details+= Constants.XL_EMPTY_ERROR+xLMyAccountMenuName +" 'PageTitle' is blank. ";
+				errorDetails+= Constants.XL_EMPTY_ERROR+xLMyAccountMenuName +" 'PageTitle' is blank. "+Constants.HASH;
 			} else {
 				try {
 
@@ -228,7 +225,7 @@ public class MyAccount {
 					} catch (NoSuchElementException e) {
 						mainMyAccountMenuFound = false;
 						currentMenuFail = true;
-						details += " Main MyAccount Menu  not found in index page. ";
+						errorDetails += " Main MyAccount Menu  not found in index page. "+Constants.HASH;
 						e.printStackTrace();
 					}
 
@@ -239,11 +236,11 @@ public class MyAccount {
 							webDriver.findElement(By.partialLinkText(xLMyAccountMenuName)).click();
 						} catch (NoSuchElementException e) {
 							currentMenuFail = true;
-							details += xLMyAccountMenuName + "  menu not found. ";
+							errorDetails += xLMyAccountMenuName + "  menu not found. "+Constants.HASH;
 							dropdownMenuNameFound = false;
 							e.printStackTrace();
 						}
-						//Thread.sleep(8000);
+						
 
 						// check if page loads
 						if (dropdownMenuNameFound == true) {
@@ -256,13 +253,13 @@ public class MyAccount {
 										.findElement(By.className(xpathIDMap.get("MyAccountPageTitle_Class")))
 										.getText();
 								if (!pageTitle.equals(xLMyAccountPageTitle)) {
-									details += xLMyAccountPageTitle + "  page not loaded. ";
+									errorDetails += xLMyAccountPageTitle + "  page not loaded. "+Constants.HASH;
 									currentMenuFail = true;
 								}
 
 							} catch (NoSuchElementException e) {
-								details += xLMyAccountPageTitle + "  pa"
-										+ "ge not loaded. ";
+								errorDetails += xLMyAccountPageTitle + "  pa"
+										+ "ge not loaded. "+Constants.HASH;
 								currentMenuFail = true;
 							}
 
@@ -271,7 +268,7 @@ public class MyAccount {
 					}
 
 				} catch (Exception e) {
-					details += xLMyAccountMenuName + Constants.UNEXPECTED_ERROR +". ";
+					errorDetails += xLMyAccountMenuName + Constants.UNEXPECTED_ERROR +". "+Constants.HASH;
 					currentMenuFail = true;
 					e.printStackTrace();
 				}
@@ -284,10 +281,7 @@ public class MyAccount {
 			} // end if
 		} // end for
 
-		if (reportFail == true)
-			reportStatus = Constants.FAIL + details+Constants.TAB;
-		else
-			reportStatus = Constants.PASS + "-";
+		reportStatus=outputOp.statusReporter(errorDetails);
 
 		return reportStatus;
 	}

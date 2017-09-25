@@ -5,7 +5,6 @@
  */
 package com.citi.testCase;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +12,7 @@ import java.util.Map;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -46,11 +46,11 @@ public class MyProfile {
 		WebDriverWait wait = new WebDriverWait(webDriver,60);
 
 		if (xLEmailEditable.isEmpty()) {
-			errorDetails = Constants.XL_EMPTY_ERROR + " 'EmailEditable' is blank. ";
+			errorDetails = Constants.XL_EMPTY_ERROR + " 'EmailEditable' is blank. "+Constants.HASH;
 		} else if (xLEmailId.isEmpty()) {
-			errorDetails = Constants.XL_EMPTY_ERROR + " 'EmailId' is blank. ";
+			errorDetails = Constants.XL_EMPTY_ERROR + " 'EmailId' is blank. "+Constants.HASH;
 		} else if (xLErrorMessage.isEmpty()) {
-			errorDetails = Constants.XL_EMPTY_ERROR + " 'ErrorMessage' is blank. ";
+			errorDetails = Constants.XL_EMPTY_ERROR + " 'ErrorMessage' is blank. "+Constants.HASH;
 		} else {
 
 			String wrongConfirmEmailId = "Wrong" + xLEmailId;
@@ -76,14 +76,14 @@ public class MyProfile {
 			// if XL EmailEditable is No
 			if (xLEmailEditable.equalsIgnoreCase(Constants.NO)) {
 				if (editableFlag  == true) {
-					errorDetails += " Email is editable in webpage. ";
+					errorDetails += " Email is editable in webpage. "+Constants.HASH;
 				}
 			}
 			// if XL EmailEditable is Yes
 			else {
 
 				if (editableFlag == false) {
-					errorDetails += " Email is non-editable in webpage. ";
+					errorDetails += " Email is non-editable in webpage. "+Constants.HASH;
 				} else {
 
 					try {
@@ -111,8 +111,11 @@ public class MyProfile {
 
 						webErrorMsg = webErrorMsg.replace("\\n", "");
 						if (!webErrorMsg.contains(xLErrorMessage))
-							errorDetails += " 'EmailErrorMessage'"+ " on webpage does not match with XL input, when providing wrong 'ConfirmEmailId'";
-
+						{
+							errorDetails += " 'EmailErrorMessage' on webpage does not match with XL input, when providing wrong 'ConfirmEmailId'. "
+									 + Constants.HASH;
+							outputOp.saveScreenshotToFile(webDriver, eachRowMap);
+						}
 						/*------------END- FIRST CASE*/
 
 						
@@ -159,33 +162,37 @@ public class MyProfile {
 						}
 
 						if (!webEmailId.equals(xLEmailId))
-							errorDetails += " EmailId not saved:WebEmailId-" + webEmailId + ",xLEmailId-" + xLEmailId;
+							errorDetails += " EmailId not saved:WebEmailId-" + webEmailId + ",xLEmailId-" + xLEmailId+Constants.HASH;
 
 						/*------------END- SECOND CASE*/
 
-					} catch (NoSuchElementException e) {
-						errorDetails += " MyProfile ContactInfo section has missing webElements. ";
+					} catch (NoSuchElementException | TimeoutException e) {
+						errorDetails += " MyProfile ContactInfo section has missing webElements. "+Constants.HASH;
+						outputOp.saveScreenshotToFile(webDriver, eachRowMap);
 						e.printStackTrace();
 					} catch (Exception e) {
-						errorDetails += Constants.UNEXPECTED_ERROR;
+						errorDetails += Constants.UNEXPECTED_ERROR+Constants.HASH;
+						outputOp.saveScreenshotToFile(webDriver, eachRowMap);
 						e.printStackTrace();
 					}
 
 				}
 			}
 			/*******************************************************/
-		} // end else
-
-		if (errorDetails.isEmpty())
-			reportStatus = Constants.PASS + "-";
-		else {
-			reportStatus = Constants.FAIL + errorDetails;
-			outputOp.saveScreenshotToFile(webDriver, eachRowMap);
-		}
+		} // end else	
+		
+		reportStatus=outputOp.statusReporter(errorDetails);
 
 		return reportStatus;
 	}
 
+	
+	/*
+	 * This method is used to test the LoyaltyProgram section 
+	 * of MyProfile page. The functionalities tested are -
+	 * add loyalty, edit loyalty and delete loyalty program name
+	 * 
+	 */
 	public String alterLoyalty(WebDriver webDriver, Map<String, Object> eachRowMap) {
 
 		String reportStatus = "";
@@ -196,11 +203,11 @@ public class MyProfile {
 		String xLEditLoyaltyProgramNumber = (String) eachRowMap.get("EditLoyaltyProgramNumber");
 
 		if (xLLoyaltyProgramName.isEmpty()) {
-			errorDetails = Constants.XL_EMPTY_ERROR + " 'LoyaltyProgramName' is blank. ";
+			errorDetails = Constants.XL_EMPTY_ERROR + " 'LoyaltyProgramName' is blank. "+Constants.HASH;
 		} else if (xLLoyaltyProgramNumber.isEmpty()) {
-			errorDetails = Constants.XL_EMPTY_ERROR + " 'LoyaltyProgramNumber' is blank. ";
+			errorDetails = Constants.XL_EMPTY_ERROR + " 'LoyaltyProgramNumber' is blank. "+Constants.HASH;
 		} else if (xLEditLoyaltyProgramNumber.isEmpty()) {
-			errorDetails = Constants.XL_EMPTY_ERROR + " 'EditLoyaltyProgramNumber' is blank. ";
+			errorDetails = Constants.XL_EMPTY_ERROR + " 'EditLoyaltyProgramNumber' is blank. "+Constants.HASH;
 		} else {
 
 			// check in web MyProfile page , if EDIT element is present
@@ -209,7 +216,7 @@ public class MyProfile {
 				// FIRST CASE - ADD LOYALTY PROGRAM
 				Boolean addSuccessFlag = addEditLoyaltyProgram(webDriver, xLLoyaltyProgramName, xLLoyaltyProgramNumber);
 				if (addSuccessFlag == false) {
-					errorDetails += " Add Loyalty failed. ";
+					errorDetails += " Add Loyalty failed. "+Constants.HASH;
 					outputOp.saveScreenshotToFile(webDriver, eachRowMap);
 				}
 
@@ -217,28 +224,25 @@ public class MyProfile {
 				Boolean editSuccessFlag = addEditLoyaltyProgram(webDriver, xLLoyaltyProgramName,
 						xLEditLoyaltyProgramNumber);
 				if (editSuccessFlag == false) {
-					errorDetails += " Edit Loyalty failed. ";
+					errorDetails += " Edit Loyalty failed. "+Constants.HASH;
 					outputOp.saveScreenshotToFile(webDriver, eachRowMap);
 				}
 
 				// THIRD CASE - REMOVE LOYALTY PROGRAM
 				Boolean removeSuccessFlag = removeLoyaltyProgram(webDriver, xLLoyaltyProgramName);
 				if (removeSuccessFlag == false) {
-					errorDetails += " Remove Loyalty failed. ";
+					errorDetails += " Remove Loyalty failed. "+Constants.HASH;
 					outputOp.saveScreenshotToFile(webDriver, eachRowMap);
 				}
 
 			} catch (Exception e) {
-				// e.printStackTrace();
+				errorDetails += Constants.UNEXPECTED_ERROR+Constants.HASH;
+				outputOp.saveScreenshotToFile(webDriver, eachRowMap);
+				e.printStackTrace();
 			}
 		}
-
-		if (errorDetails.isEmpty())
-			reportStatus = Constants.PASS + "-";
-		else {
-			reportStatus = Constants.FAIL + errorDetails;
-			outputOp.saveScreenshotToFile(webDriver, eachRowMap);
-		}
+		
+		reportStatus=outputOp.statusReporter(errorDetails);
 
 		return reportStatus;
 	}
@@ -338,6 +342,5 @@ public class MyProfile {
 
 		return removeSuccessFlag;
 	}
-
 
 }

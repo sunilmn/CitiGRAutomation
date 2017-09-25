@@ -44,10 +44,11 @@ public class FaqContactUs {
 
 		String xlFAQBreadCrumb = (String) eachRowMap.get("FAQBreadCrumb");
 		String xlFAQDefault = (String) eachRowMap.get("FAQDefault");
-		String xlFAQCategoryTitle = (String) eachRowMap.get("FAQCategoryTitle");
+		String xlFAQCategoryTitle = (String) eachRowMap.get("FAQDefaultCategoryTitle");
+		//to check ContactUs section
 		String xlContacUsMenuName = (String) eachRowMap.get("ContacUsMenuName");
-		String webBreadcrumb ="";
-		String errorDetails ="";
+		String webBreadcrumb = "";
+		String errorDetails = "";
 		WebDriverWait wait = new WebDriverWait(webDriver, 10);
 		boolean faqDefaultPage = true;
 
@@ -56,18 +57,19 @@ public class FaqContactUs {
 		} else if (xlFAQDefault.isEmpty()) {
 			errorDetails += pageName + " FAQDefault xl input is blank." + Constants.HASH;
 		} else if (xlFAQCategoryTitle.isEmpty()) {
-			errorDetails += pageName + " FAQCategoryTitle xl input is blank." + Constants.HASH;
+			errorDetails += pageName + " FAQDefaultCategoryTitle xl input is blank." + Constants.HASH;
 		} else if (xlContacUsMenuName.isEmpty()) {
 			errorDetails += pageName + " ContacUsMenuName xl input is blank." + Constants.HASH;
 		} else {
 			// this function is called to close the ForeSee survey popup
 			webUtil.closeForeSeeSurveyPopup(webDriver);
 
-			// check for FAQ Default
+			/*// check for FAQ Default
 			try {
 
 				String webFAQDefault = wait
-						.until(ExpectedConditions.elementToBeClickable((By.cssSelector(xpathIDMap.get("FAQDefault")))))
+						.until(ExpectedConditions
+								.elementToBeClickable((By.cssSelector(xpathIDMap.get("FAQPageCategoryTitle")))))
 						.getText();
 
 				if (!webFAQDefault.equals(xlFAQDefault))
@@ -76,13 +78,14 @@ public class FaqContactUs {
 
 			} catch (NoSuchElementException | TimeoutException e) {
 				// TODO: handle exception
-				errorDetails += pageName+xlFAQDefault +"Default page not loaded."+Constants.HASH;
+				errorDetails += pageName + "-" + xlFAQDefault + " Default page not loaded." + Constants.HASH;
 				e.printStackTrace();
 				faqDefaultPage = false;
-			}
+			}*/
 
 			if (faqDefaultPage) {
-				// check for breadCrumb -> Home / FAQs and Contact Us / PROGRAM INFORMATION
+				// check for breadCrumb -> Home / FAQs and Contact Us / PROGRAM
+				// INFORMATION
 				try {
 
 					List<WebElement> webBreadcrumbsList = webDriver
@@ -109,12 +112,13 @@ public class FaqContactUs {
 				try {
 					String webFAQCategoryTitle = wait
 							.until(ExpectedConditions
-									.elementToBeClickable((By.cssSelector(xpathIDMap.get("FAQCategoryTitle")))))
+									.elementToBeClickable((By.cssSelector(xpathIDMap.get("FAQDefaultCategoryTitle")))))
 							.getText();
 
 					if (!webFAQCategoryTitle.equals(xlFAQCategoryTitle))
 						errorDetails += pageName + xlFAQCategoryTitle
-								+ " Excel 'FAQCategoryTitle' not matching Webpage FAQCategoryTitle." + Constants.HASH;
+								+ " Excel 'FAQDefaultCategoryTitle' not matching Webpage FAQDefaultCategoryTitle."
+								+ Constants.HASH;
 
 				} catch (NoSuchElementException | TimeoutException e) {
 					// TODO: handle exception
@@ -122,7 +126,9 @@ public class FaqContactUs {
 					e.printStackTrace();
 				}
 
-				// Check for FAQ CategoryTitle
+				
+				
+				// Check for ContactUs Section (using the same name as XL ContacUsMenuName)			
 				try {
 					String webContacUsMenuName = wait
 							.until(ExpectedConditions
@@ -130,11 +136,11 @@ public class FaqContactUs {
 							.getText();
 
 					if (webContacUsMenuName.isEmpty())
-						errorDetails += pageName + xlContacUsMenuName + " not found." + Constants.HASH;
+						errorDetails += pageName + xlContacUsMenuName + " section not found." + Constants.HASH;
 
 				} catch (NoSuchElementException | TimeoutException e) {
 					// TODO: handle exception
-					errorDetails += pageName + xlContacUsMenuName + " not found in webpage." + Constants.HASH;
+					errorDetails += pageName + xlContacUsMenuName + " section not found in webpage." + Constants.HASH;
 					e.printStackTrace();
 				}
 			}
@@ -147,44 +153,39 @@ public class FaqContactUs {
 	 * Method to validate Help and FAQ
 	 *
 	 */
-	public String validateHelpAndFaq(WebDriver webDriver, Map<String, Object> eachRowMap) {
+	public String checkHelpAndFaqPage(WebDriver webDriver, Map<String, Object> eachRowMap) {
 		String errorDetails = "";
 		String reportStatus = "";
-		String pageName = "FAQ->";
+		String pageName = Constants.FAQ;
 		try {
 			String xlHelpMenuNameValue = (String) eachRowMap.get("HelpMenuName");
 			String xlFAQMenuNameValue = (String) eachRowMap.get("FAQMenuName");
 
 			WebDriverWait wait = new WebDriverWait(webDriver, 10);
 			if (xlHelpMenuNameValue.isEmpty()) {
-				errorDetails += Constants.FAIL + " HelpMenuName xl input is blank." + Constants.HASH;
+				errorDetails += Constants.XL_EMPTY_ERROR + " HelpMenuName xl input is blank." + Constants.HASH;
 			} else if (xlFAQMenuNameValue.isEmpty()) {
-				errorDetails += Constants.FAIL + " FAQMenuName xl input is blank." + Constants.HASH;
+				errorDetails += Constants.XL_EMPTY_ERROR + " FAQMenuName xl input is blank." + Constants.HASH;
 			} else {
 
 				wait.until(ExpectedConditions.elementToBeClickable((By.partialLinkText(xlHelpMenuNameValue)))).click();
+				wait.until(ExpectedConditions.elementToBeClickable((By.partialLinkText(xlFAQMenuNameValue)))).click();				
+				
+				errorDetails += checkDefaultPageLoad(webDriver, eachRowMap, pageName);
 
-				wait.until(ExpectedConditions.elementToBeClickable((By.partialLinkText(xlFAQMenuNameValue)))).click();
-
-				errorDetails = intialCommonHelpFaqContactUS(webDriver, eachRowMap, pageName);
+				//errorDetails = intialCommonHelpFaqContactUS(webDriver, eachRowMap, pageName);
 
 			}
 
 		} catch (NoSuchElementException | TimeoutException e) {
-			errorDetails = pageName + " page not loaded." + Constants.HASH;
+			errorDetails += pageName + " page not loaded." + Constants.HASH;
 			e.printStackTrace();
 		} catch (Exception e) {
-			errorDetails = Constants.FAIL + Constants.UNEXPECTED_ERROR + "." + Constants.HASH;
+			errorDetails += Constants.UNEXPECTED_ERROR + "." + Constants.HASH;
 			e.printStackTrace();
 		}
 
-		if (!errorDetails.isEmpty()) {
-			outputOp.saveScreenshotToFile(webDriver, eachRowMap);
-			reportStatus = Constants.FAIL + errorDetails + Constants.TAB;
-		} else {
-			reportStatus = Constants.PASS;
-		}
-
+		reportStatus = outputOp.statusReporter(errorDetails, eachRowMap, webDriver);
 		return reportStatus;
 	}
 
@@ -192,34 +193,35 @@ public class FaqContactUs {
 	 * Method to validate ContactUS
 	 */
 	public String validateContactUS(WebDriver webDriver, Map<String, Object> eachRowMap) {
-		String errorDetails ="";
-		String reportStatus ="";
-		String pageName = "ContactUS->";
+		String errorDetails = "";
+		String reportStatus = "";
+		String pageName = Constants.CONTACTUS;
 		try {
 			String xlContactUsValue = (String) eachRowMap.get("ContacUsMenuName");
 			if (xlContactUsValue.isEmpty()) {
-				errorDetails +=pageName + "ContactUs Excel input is blank."+Constants.HASH;
+				errorDetails += pageName + " - Excel input is blank." + Constants.HASH;
 			} else {
+				
+				//click on ContactUs link
 				WebDriverWait wait = new WebDriverWait(webDriver, 10);
 				wait.until(ExpectedConditions.elementToBeClickable((By.partialLinkText(xlContactUsValue)))).click();
 
-				errorDetails = intialCommonHelpFaqContactUS(webDriver, eachRowMap, pageName);
+				//check if page loads
+				errorDetails = checkDefaultPageLoad(webDriver, eachRowMap, pageName);
+				if(errorDetails.isEmpty())				
+						errorDetails = intialCommonHelpFaqContactUS(webDriver, eachRowMap, pageName);
 			}
 
 		} catch (NoSuchElementException | TimeoutException e) {
-			errorDetails =pageName+ "page not loaded."+Constants.HASH;
+			errorDetails += pageName + " page not loaded." + Constants.HASH;
 			e.printStackTrace();
 		} catch (Exception e) {
-			errorDetails = Constants.FAIL + Constants.UNEXPECTED_ERROR + ". " + Constants.HASH;
+			errorDetails += Constants.UNEXPECTED_ERROR + ". " + Constants.HASH;
 			e.printStackTrace();
 		}
 
-		if (!errorDetails.isEmpty()) {
-			outputOp.saveScreenshotToFile(webDriver, eachRowMap);
-			reportStatus = Constants.FAIL + errorDetails;
-		} else {
-			reportStatus = Constants.PASS;
-		}
+		reportStatus = outputOp.statusReporter(errorDetails, eachRowMap, webDriver);
+
 		return reportStatus;
 	}
 
@@ -228,13 +230,13 @@ public class FaqContactUs {
 	 * WebPage and Excel Category compare
 	 *
 	 */
-	public String comapareCategaory(WebDriver webDriver, Map<String, Object> eachRowMap) {
+	public String compareCategoryList(WebDriver webDriver, Map<String, Object> eachRowMap) {
 		String reportStatus = "";
 		String errorDetails = "";
 		try {
 			// Reading the data from the XL Category
 			Map<String, String> xLCategoryMap = new LinkedHashMap<String, String>();
-			xLCategoryMap = getXLAllCategoryList(eachRowMap);
+			xLCategoryMap = getXLAllCategoryMap(eachRowMap);
 
 			// Read the Category from from the web page
 			List<String> webCategoryList = new ArrayList<>();
@@ -270,18 +272,11 @@ public class FaqContactUs {
 				errorDetails += webExtraCategoryList.toString() + " is extra." + Constants.HASH;
 
 		} catch (Exception e) {
-			errorDetails = Constants.FAIL + Constants.UNEXPECTED_ERROR + "." + Constants.HASH;
+			errorDetails += Constants.FAIL + Constants.UNEXPECTED_ERROR + "." + Constants.HASH;
 			e.printStackTrace();
 		}
 
-		if (errorDetails.isEmpty())
-			reportStatus = Constants.PASS + "-";
-
-		else {
-			reportStatus = Constants.FAIL + errorDetails;
-			outputOp.saveScreenshotToFile(webDriver, eachRowMap);
-		}
-
+		reportStatus = outputOp.statusReporter(errorDetails, eachRowMap, webDriver);
 		return reportStatus;
 	}
 
@@ -321,34 +316,36 @@ public class FaqContactUs {
 	 * Comparing the WebElement and XLCategoryDetails.
 	 *
 	 */
-	public String compareEachCategoryDetail(WebDriver webDriver, Map<String, Object> eachRowMap) {
+	public String checkEachCategoryDetail(WebDriver webDriver, Map<String, Object> eachRowMap) {
 
 		String errorDetails = "";
 		String reportStatus = "";
 		try {
 
-			String xlFAQBreadCrumbOld = (String) eachRowMap.get("FAQBreadCrumb");
-			String xlFAQDefault = (String) eachRowMap.get("FAQDefault");
+			String xlFAQBreadCrumb = (String) eachRowMap.get("FAQBreadCrumb");
 			boolean faqCategory = true;
 
 			// Reading the data from the XL Category
 			Map<String, String> xLCategoryMap = new LinkedHashMap<String, String>();
-			xLCategoryMap = getXLAllCategoryList(eachRowMap);
+			xLCategoryMap = getXLAllCategoryMap(eachRowMap);
 
 			WebDriverWait wait = new WebDriverWait(webDriver, 10);
 
 			// iterate XL categoryMap - for each non empty xl categoryMap
 			for (Entry<String, String> entry : xLCategoryMap.entrySet()) {
 				String webBreadcrumb = "";
-				String XlcategoryKey = entry.getKey();
-				String XlcategoryValue = entry.getValue();
+				String xlcategoryTitle = entry.getKey();
+				String xlQuestionCount = entry.getValue();
 
+				// Checks if the category is found in the LeftNavigation
+				// CategoryList
 				try {
 					// Click one category
-					wait.until(ExpectedConditions.elementToBeClickable((By.partialLinkText(XlcategoryKey)))).click();
+					wait.until(ExpectedConditions.elementToBeClickable((By.partialLinkText(xlcategoryTitle)))).click();
 				} catch (NoSuchElementException | TimeoutException e) {
 					// TODO: handle exception
-					errorDetails += XlcategoryKey + " FAQCategory not found in webpage." + Constants.HASH;
+					errorDetails += xlcategoryTitle + " 'FAQCategory' not found in LeftNavigation of webpage."
+							+ Constants.HASH;
 					faqCategory = false;
 					e.printStackTrace();
 				}
@@ -358,27 +355,30 @@ public class FaqContactUs {
 
 				if (faqCategory) {
 					try {
-						// Check the title
+
+						// 1st -> Check the page title
 						String webFAQCategoryTitle = wait
-								.until(ExpectedConditions.elementToBeClickable((By.cssSelector(xpathIDMap.get("FAQDefault")))))
+								.until(ExpectedConditions
+										.elementToBeClickable((By.cssSelector(xpathIDMap.get("FAQPageCategoryTitle")))))
 								.getText();
 
-						if (!webFAQCategoryTitle.equals(XlcategoryKey))
-							errorDetails += XlcategoryKey
+						if (!webFAQCategoryTitle.equals(xlcategoryTitle))
+							errorDetails += xlcategoryTitle
 									+ " Excel FAQCategoryTitle not matching with Webpage_FAQCategoryTitle."
 									+ Constants.HASH;
 					} catch (NoSuchElementException | TimeoutException e) {
 						// TODO: handle exception
-						errorDetails += XlcategoryKey + " FAQCategoryTitle not found in webpage." + Constants.HASH;
+						errorDetails += xlcategoryTitle + " FAQCategoryTitle not found in webpage." + Constants.HASH;
 						e.printStackTrace();
 					}
 
+					// 2nd - Check the breadcrumb
 					try {
-						// Check the breadcrumb
+
 						List<WebElement> webBreadcrumbsList = webDriver
 								.findElements(By.cssSelector(xpathIDMap.get("Bread_CrumbcheckFAQsand_ContactUs")));
 
-						// iterate breadCrumbList
+						// construct web breadcrumb in the appropriate format
 						for (int i = 0; i < webBreadcrumbsList.size(); i++) {
 							if (i == 0)
 								webBreadcrumb += webBreadcrumbsList.get(i).getText();
@@ -386,32 +386,36 @@ public class FaqContactUs {
 								webBreadcrumb += " / " + webBreadcrumbsList.get(i).getText();
 						}
 
-						String returnConstantBreadCrumb = returnConstantBreadCrumb(xlFAQBreadCrumbOld);
-						returnConstantBreadCrumb += " / " + XlcategoryKey;
+						// get XL breadCrumb (static part)
+						String xlBreadCrumb = getXLStaticBreadCrumb(xlFAQBreadCrumb);
 
-						if (!webBreadcrumb.equals(returnConstantBreadCrumb))
-							errorDetails += XlcategoryKey + " Excel Category breadCrumb not matching with webpage_breadCrumb."
+						// append dynamic xlcategoryTitle
+						xlBreadCrumb += " / " + xlcategoryTitle;
+
+						if (!webBreadcrumb.equals(xlBreadCrumb))
+							errorDetails += xlcategoryTitle
+									+ " Excel Category breadCrumb not matching with webpage_breadCrumb."
 									+ Constants.HASH;
 					} catch (NoSuchElementException | TimeoutException e) {
 						// TODO: handle exception
-						errorDetails += XlcategoryKey + "FAQBreadCrumb not found in webpage."+ Constants.HASH;
+						errorDetails += xlcategoryTitle + "FAQBreadCrumb not found in webpage." + Constants.HASH;
 						e.printStackTrace();
 					}
 
+					// 3rd- Check the question count
 					try {
-						// Check the question count
 						String webFAQCategoryQuestionCount = wait
 								.until(ExpectedConditions
 										.elementToBeClickable(By.cssSelector(xpathIDMap.get("Question_Count"))))
 								.getText();
 
-						if (!webFAQCategoryQuestionCount.equals(XlcategoryValue.replace(".0", "")))
-							errorDetails += XlcategoryKey
+						if (!webFAQCategoryQuestionCount.equals(xlQuestionCount.replace(".0", "")))
+							errorDetails += xlcategoryTitle
 									+ " Excel FAQCategoryQuestionCount not matching with Web_FAQCategoryQuestionCount."
 									+ Constants.HASH;
 					} catch (NoSuchElementException | TimeoutException e) {
 						// TODO: handle exception
-						errorDetails += XlcategoryKey + " FAQCategoryQuestionCount not found in webpage."
+						errorDetails += xlcategoryTitle + " FAQCategoryQuestionCount not found in webpage."
 								+ Constants.HASH;
 						e.printStackTrace();
 					}
@@ -419,31 +423,24 @@ public class FaqContactUs {
 
 			} // End For
 		} catch (Exception e) {
-			errorDetails = Constants.FAIL + Constants.UNEXPECTED_ERROR + ". " + Constants.HASH;
+			errorDetails = Constants.UNEXPECTED_ERROR + ". " + Constants.HASH;
 			e.printStackTrace();
 		}
 
-		if (errorDetails.isEmpty())
-			reportStatus = Constants.PASS + "-";
-
-		else {
-			reportStatus = Constants.FAIL + errorDetails;
-			outputOp.saveScreenshotToFile(webDriver, eachRowMap);
-		}
+		reportStatus = outputOp.statusReporter(errorDetails, eachRowMap, webDriver);
 		return reportStatus;
 	}
 
 	/*
-	 * to get all the Category1,Category2, Category3 from xl sheet
-	 * 
+	 * to get map of all the xlcategoryTitle And Question Count
 	 */
-	public Map<String, String> getXLAllCategoryList(Map<String, Object> rowMap) {
+	public Map<String, String> getXLAllCategoryMap(Map<String, Object> rowMap) {
 
 		Map<String, String> xLCategorysAndQuestionMap = new LinkedHashMap<String, String>();
 
 		Map<String, String> xLCategory = new LinkedHashMap<String, String>();
 		int i = 1;
-		// iterate all the maps in a row to retrieve only the non-empty MenuName
+		// iterate all the maps in a row to retrieve only the non-empty category
 		for (Entry<String, Object> entry : rowMap.entrySet()) {
 			// key heading will be Category1,Category2, Category3...
 			String keyHeading = entry.getKey();
@@ -459,17 +456,24 @@ public class FaqContactUs {
 		// for each non-empty category, get corresponding question count
 		for (Entry<String, String> entry : xLCategory.entrySet()) {
 			String categoryNameKeyHeading = entry.getKey();
-			String cateoryNameValue = entry.getValue();
-			String pageTitleSubstring = categoryNameKeyHeading + "Qs";
-			String pageTitle = (String) rowMap.get(pageTitleSubstring);
-			xLCategorysAndQuestionMap.put(cateoryNameValue, pageTitle);
+			String xlcategoryTitle = entry.getValue();
+			String xlFaqCategoryQuestion = categoryNameKeyHeading + "Qs";
+			String questionCount = (String) rowMap.get(xlFaqCategoryQuestion);
+			xLCategorysAndQuestionMap.put(xlcategoryTitle, questionCount);
 		}
 
 		return xLCategorysAndQuestionMap;
 
 	}
 
-	public String returnConstantBreadCrumb(String breadCrumb) {
+	
+	/*
+	 * 
+	 * In Excel, the breadcrumb is of the format 'Home / FAQs and Contact US / PROGRAM INFORMATION'
+     * This function gets the first and second part (static) and returns the string
+	 * 
+	 */
+	public String getXLStaticBreadCrumb(String breadCrumb) {
 
 		String[] split = breadCrumb.split("/");
 		String finalBreadCrumb = "";
@@ -480,10 +484,44 @@ public class FaqContactUs {
 
 			if (i == 1)
 				finalBreadCrumb += " / " + split[i];
-
 		}
 
 		return finalBreadCrumb;
+	}
+
+	/*
+	 * Check if the default page loads , by taking the xl input which mentions 
+	 * FAQDefault(i.e, the default category that is seen when page loads)
+	 * 
+	 */
+	public String checkDefaultPageLoad(WebDriver webDriver, Map<String, Object> eachRowMap, String pageName) {
+		String xlFAQDefault = (String) eachRowMap.get("FAQDefault");
+		String errorDetails = "";
+		WebDriverWait wait = new WebDriverWait(webDriver, 10);
+
+		if (xlFAQDefault.isEmpty()) {
+			errorDetails += Constants.XL_EMPTY_ERROR + " 'FAQDefault' xl input is blank." + Constants.HASH;
+		} else {
+			
+			// check if the default page loads
+			try {
+
+				String webFAQDefault = wait
+						.until(ExpectedConditions
+								.elementToBeClickable((By.cssSelector(xpathIDMap.get("FAQPageCategoryTitle")))))
+						.getText();
+
+				if (!webFAQDefault.equals(xlFAQDefault))
+					errorDetails += pageName + xlFAQDefault + " -Excel 'FAQDefault' not matching with webpage"
+							+ Constants.HASH;
+
+			} catch (NoSuchElementException | TimeoutException e) {
+				// TODO: handle exception
+				errorDetails += pageName + xlFAQDefault + " -Default page not loaded." + Constants.HASH;
+				e.printStackTrace();
+			}
+		}
+		return errorDetails;
 	}
 
 }

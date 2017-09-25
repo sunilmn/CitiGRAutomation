@@ -14,10 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
 
 import com.citi.fileActivity.OutputOperations;
 import com.citi.util.Constants;
@@ -37,38 +39,17 @@ public class MegaSubMenu {
 	 * Check the megamenu in index page
 	 * 
 	 */
-	public String megaMenuCheck(WebDriver webDriver, Map<String, Object> rowMap) {
+	public String megaMenuCheck(WebDriver webDriver, Map<String, Object> eachRowMap) {
 
 		String reportStatus = "";
-		String description = "";
+		String errorDetails = "";
 
 		// get the mega-menu list from web page
 		List<String> webMegamenuList = new ArrayList<>();
 		webMegamenuList = webUtil.getWebMegamenu(webDriver);
 
 		Map<String, String> xLmegaMenuMap = new LinkedHashMap<String, String>();
-		xLmegaMenuMap = excelUtil.getxLMegamenuMap(rowMap);
-
-		/*if (xLmegaMenuMap.isEmpty()) {
-			System.out.println(Constants.XL_ERROR + " - xLmegaMenuMap is empty");
-			reportStatus = Constants.XL_ERROR + "Excel MegaMenu Input is empty";
-		} else {
-			for (Entry<String, String> entry : xLmegaMenuMap.entrySet()) {
-				String xLmegamenuName = entry.getValue();
-				if (webMegamenuList.contains(xLmegamenuName))
-					continue;
-				else
-					description += "'" + xLmegamenuName + "' ,";
-			}
-
-			if (description.isEmpty())
-				reportStatus = "Pass;" + "-";
-			else
-				reportStatus = "Fail;" + description + " megamenu not found ";
-		}
-
-		return reportStatus;*/
-		
+		xLmegaMenuMap = excelUtil.getxLMegamenuMap(eachRowMap);
 		
 		List<String> xLmissingMegaMenuList = new ArrayList<String>();
 		List<String> webExtraMegaMenuList = new ArrayList<String>();
@@ -84,11 +65,11 @@ public class MegaSubMenu {
 				xLmissingMegaMenuList.add(xLmegamenuName);
 		}
 		if(!xLmissingMegaMenuList.isEmpty())
-			description = xLmissingMegaMenuList.toString()+" is missing. ";
+			errorDetails = xLmissingMegaMenuList.toString()+" is missing. ";
 		
 		// check if each item in web-megamenu
 		// list is present in xl-megamenu,
-		//  if not present then  it is extra
+		// if not present then  it is extra
 		for (int i = 0; i < webMegamenuList.size(); i++) {
 			String webMegaMenuName = webMegamenuList.get(i);
 			if (xLmegaMenuMap.containsValue(webMegaMenuName))
@@ -97,18 +78,14 @@ public class MegaSubMenu {
 				webExtraMegaMenuList.add(webMegaMenuName);
 		}
 		if(!webExtraMegaMenuList.isEmpty())
-			description += webExtraMegaMenuList.toString()+" is extra. ";
+			errorDetails += webExtraMegaMenuList.toString()+" is extra. ";
 		
+		System.out.println("dissimilarMegaMenu=" + errorDetails);
 		
-		System.out.println("dissimilarMegaMenu=" + description);
-		if (description.isEmpty())
-			reportStatus = Constants.PASS + "-";
-		else
-		{
-			reportStatus = Constants.FAIL + "MegaMenu Dissimilarity: "+description +Constants.TAB;
-			outputOp.saveScreenshotToFile(webDriver, rowMap);
-		}
-
+		if (!errorDetails.isEmpty())
+			errorDetails = "MegaMenu Dissimilarity: "+errorDetails+Constants.HASH;
+		
+		reportStatus=outputOp.statusReporter(errorDetails, eachRowMap, webDriver);
 		return reportStatus;	
 		
 	}
@@ -122,6 +99,7 @@ public class MegaSubMenu {
 	public String subMenuCheck(WebDriver webDriver, Map<String, Object> eachRowMap, String country) {
 
 		String reportStatus = "";
+		String errorDetails = "";
 		
 
 		Map<String, String> xLmegaMenuMap = new LinkedHashMap<String, String>();
@@ -234,11 +212,11 @@ public class MegaSubMenu {
 
 		} // end for
 		System.out.println("megaMissingSubMenuMap=" + megaMissingSubMenuMap);
-		if (megaMissingSubMenuMap.isEmpty())
-			reportStatus = Constants.PASS + "-";
-		else
-			reportStatus = Constants.FAIL + "SubMenu Dissimilarity: " + megaMissingSubMenuMap.toString()+Constants.TAB;
-
+		
+		if (!megaMissingSubMenuMap.isEmpty())
+			errorDetails= "SubMenu Dissimilarity: " + megaMissingSubMenuMap.toString()+Constants.HASH;
+		
+		reportStatus=outputOp.statusReporter(errorDetails);
 		return reportStatus;
 	}
 

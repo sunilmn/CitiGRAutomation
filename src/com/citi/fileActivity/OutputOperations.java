@@ -29,6 +29,7 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 
 import com.citi.gr.CitiMain;
+import com.citi.util.Constants;
 
 public class OutputOperations {
 
@@ -91,4 +92,38 @@ public class OutputOperations {
 		}
 
 	}
+	
+	
+	
+	/*
+	 * Takes one screenshot and returns reportStatus
+	 * 
+	 */
+	public String statusReporter(String errorDetails, Map<String, Object> eachRowMap, WebDriver webDriver) {
+
+		String reportStatus = "";
+		if (errorDetails.isEmpty())
+			reportStatus = Constants.PASS_REPORT;
+		else {
+			reportStatus = Constants.FAIL_SEMICOLON + errorDetails;
+			saveScreenshotToFile(webDriver, eachRowMap);
+		}
+		return reportStatus;
+	}
+
+	/*
+	 * Returns reportStatus
+	 * 
+	 */
+	public String statusReporter(String errorDetails) {
+
+		String reportStatus = "";
+		if (errorDetails.isEmpty())
+			reportStatus = Constants.PASS_REPORT;
+		else
+			reportStatus = Constants.FAIL_SEMICOLON + errorDetails;
+
+		return reportStatus;
+	}
+
 }

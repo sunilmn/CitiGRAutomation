@@ -49,13 +49,15 @@ public class EntryMode {
 			webDriver.get(url);
 			webDriver.manage().window().maximize();
 			String expectedTitle = "Welcome to Citi Rewards | Please Select Your Country";
-
 		
-			// Assert.assertEquals(url, driver.getCurrentUrl());
-			Assert.assertEquals(expectedTitle, webDriver.getTitle());
-			reportStatus = Constants.PASS + "-";
+			//Assert.assertEquals(expectedTitle, webDriver.getTitle());
+			if(webDriver.getTitle().equals(expectedTitle))
+				reportStatus = Constants.PASS_REPORT;
+			else
+				reportStatus = Constants.FAIL_SEMICOLON + url + "  ->CountrySelectionPage not loaded. ";
 		} catch (Exception e) {
-			reportStatus = Constants.FAIL + url + "  ->CountrySelectionPage not loaded. ";
+			//reportStatus = Constants.FAIL_SEMICOLON + url + "  ->CountrySelectionPage not loaded. ";
+			reportStatus = Constants.UNEXPECTED_ERROR+Constants.HASH;			
 			e.printStackTrace();
 		}
 		return reportStatus;
@@ -79,18 +81,18 @@ public class EntryMode {
 				webDriver.findElement(By.partialLinkText(country)).click();
 				countryFound=true;
 			} catch (NoSuchElementException e) {
-				reportStatus = Constants.FAIL + country+" not found. ";
+				reportStatus = Constants.FAIL_SEMICOLON + country+" not found. ";
 				countryFound=false;
 			}
 			if(countryFound==true)	
 			{
 				WebElement element = webDriver.findElement(By.id("header-signon"));
 				if (element != null) {
-					reportStatus = Constants.PASS + "-";
+					reportStatus = Constants.PASS_REPORT;
 				}
 			}
 		} catch (Exception e) {
-			reportStatus = Constants.FAIL + "Index Page not loaded. ";
+			reportStatus = Constants.FAIL_SEMICOLON + "Index Page not loaded. ";
 			e.printStackTrace();
 		}
 		return reportStatus;
@@ -164,10 +166,10 @@ public class EntryMode {
 
 			WebElement element = webDriver.findElement(By.id(xpathIDMap.get("SignOff_Id")));
 			if (element != null) {
-				reportStatus = Constants.PASS + "-";
+				reportStatus = Constants.PASS_REPORT;
 			}
 		} catch (Exception e) {
-			reportStatus = Constants.FAIL + "Could not login. " + Constants.TAB;
+			reportStatus = Constants.FAIL_SEMICOLON + "Could not login. ";
 			e.printStackTrace();
 		}
 		return reportStatus;
@@ -188,10 +190,10 @@ public class EntryMode {
 			System.out.println("Signoff button Clicked");
 			//Thread.sleep(2000);
 			Assert.assertEquals(expectedTitle, webDriver.getTitle());
-			reportStatus = Constants.PASS + "-";
+			reportStatus = Constants.PASS_REPORT;
 
 		} catch (Exception e) {
-			reportStatus = Constants.FAIL + url + "  ->Did not signoff -CountrySelectionPage not loaded. ";
+			reportStatus = Constants.FAIL_SEMICOLON+ url + "  ->Did not signoff -CountrySelectionPage not loaded. ";
 			System.out.println("In clickSignOff->" + e);
 			e.printStackTrace();
 		}
@@ -226,6 +228,184 @@ public class EntryMode {
 			outputOp.saveScreenshotToFile(webDriver, eachRowMap);	
 		
 		return reportStatus;
+	}
+	
+	
+	
+	
+	/**
+	 * 
+	 * This method is used in OBO login mode - defines initial 4 steps for logging in (until coming to welcome
+	 * page)
+	 * 
+	 */
+	public String commonOBOLogin(WebDriver webDriver, Map<String, Object> eachRowMap) {
+
+		// 1st step - open url webpage
+		String reportStatus = openWebPage(webDriver);
+		if (reportStatus.contains("Pass")) {
+			// 2nd step - select country and go to index page
+			reportStatus = selectCountry(webDriver, (String) eachRowMap.get("Country"));
+			if (reportStatus.contains("Pass")) {
+				clickSignOn(webDriver);
+				reportStatus = oboLogin(webDriver, eachRowMap);
+			}
+		}
+		
+		// this function is called to close the ForeSee survey popup
+		webUtil.closeForeSeeSurveyPopup(webDriver);
+		
+		if (reportStatus.contains("Fail"))
+			outputOp.saveScreenshotToFile(webDriver, eachRowMap);	
+		
+		return reportStatus;
+	}
+	
+	
+	/*
+	 * 
+	 * In the mockLogin page , enter all the details.
+	 * If OBO logged in(agentID) ,it has to navigate to Index page, 
+	 * confirm it by checking if
+	 * 'sign off' id is present in Index page
+	 * 
+	 */
+	public String oboLogin(WebDriver webDriver, Map<String, Object> eachRowMap) {
+
+		String reportStatus = "";
+
+		System.out.println("Entering OBO Logon Credentials");
+		
+		try {
+
+			// Enter Source Code
+			webDriver.findElement(By.id(xpathIDMap.get("SourceCode_Id"))).clear();
+			webDriver.findElement(By.id(xpathIDMap.get("SourceCode_Id")))
+					.sendKeys((String) eachRowMap.get("SourceCode"));
+
+			// Enter Language Code
+			webDriver.findElement(By.id(xpathIDMap.get("LanguageCode_Id"))).clear();
+			webDriver.findElement(By.id(xpathIDMap.get("LanguageCode_Id")))
+					.sendKeys((String) eachRowMap.get("LanguageCode"));
+
+			// Enter Account number
+			webDriver.findElement(By.id(xpathIDMap.get("AccountNumber_Id"))).clear();
+			webDriver.findElement(By.id(xpathIDMap.get("AccountNumber_Id")))
+					.sendKeys((String) eachRowMap.get("AccountNumber"));
+			
+			// Enter AgentID
+			webDriver.findElement(By.id(xpathIDMap.get("AgentId_Id"))).clear();
+			webDriver.findElement(By.id(xpathIDMap.get("AgentId_Id")))
+					.sendKeys((String) eachRowMap.get("AccountNumber"));
+			
+						
+			
+
+			// click on Login button
+			System.out.println("Clicking on Login Button in OBO mode");
+			String xpath = xpathIDMap.get("Logon_Id");
+
+			webDriver.findElement(By.xpath(xpath)).click();
+			
+
+			WebElement element = webDriver.findElement(By.id(xpathIDMap.get("SignOff_Id")));
+			if (element != null) {
+				reportStatus = Constants.PASS_REPORT;
+			}
+		} catch (Exception e) {
+			reportStatus = Constants.FAIL_SEMICOLON + "Could not login in OBO mode. ";
+			e.printStackTrace();
+		}
+		return reportStatus;
+
+	}
+	
+	
+	
+	/**
+	 * 
+	 * This method is used in Cookied login mode - defines initial 4 steps for logging in (until coming to welcome
+	 * page)
+	 * 
+	 */
+	public String commonCookiedLogin(WebDriver webDriver, Map<String, Object> eachRowMap) {
+
+		// 1st step - open url webpage
+		String reportStatus = openWebPage(webDriver);
+		if (reportStatus.contains("Pass")) {
+			// 2nd step - select country and go to index page
+			reportStatus = selectCountry(webDriver, (String) eachRowMap.get("Country"));
+			if (reportStatus.contains("Pass")) {
+				clickSignOn(webDriver);
+				reportStatus = cookiedLogin(webDriver, eachRowMap);
+			}
+		}
+		
+		// this function is called to close the ForeSee survey popup
+		webUtil.closeForeSeeSurveyPopup(webDriver);
+		
+		if (reportStatus.contains("Fail"))
+			outputOp.saveScreenshotToFile(webDriver, eachRowMap);	
+		
+		return reportStatus;
+	}
+	
+	/*
+	 * 
+	 * In the mockLogin page , enter all the details.
+	 * If Cookied logged in(check box) ,it has to navigate to Index page, 
+	 * confirm it by checking if
+	 * 'sign off' id is present in Index page
+	 * 
+	 */
+	public String cookiedLogin(WebDriver webDriver, Map<String, Object> eachRowMap) {
+
+		String reportStatus = "";
+
+		System.out.println("Entering Cookied Logon Credentials");
+		
+		try {
+
+			// Enter Source Code
+			webDriver.findElement(By.id(xpathIDMap.get("SourceCode_Id"))).clear();
+			webDriver.findElement(By.id(xpathIDMap.get("SourceCode_Id")))
+					.sendKeys((String) eachRowMap.get("SourceCode"));
+
+			// Enter Language Code
+			webDriver.findElement(By.id(xpathIDMap.get("LanguageCode_Id"))).clear();
+			webDriver.findElement(By.id(xpathIDMap.get("LanguageCode_Id")))
+					.sendKeys((String) eachRowMap.get("LanguageCode"));
+
+			// Enter Account number
+			webDriver.findElement(By.id(xpathIDMap.get("AccountNumber_Id"))).clear();
+			webDriver.findElement(By.id(xpathIDMap.get("AccountNumber_Id")))
+					.sendKeys((String) eachRowMap.get("AccountNumber"));
+			
+			// Check RememberMe checkbox
+			//webDriver.findElement(By.id(xpathIDMap.get("AgentId_Id"))).clear();
+			webDriver.findElement(By.id(xpathIDMap.get("RememberMe_Id"))).click();
+					
+			
+						
+			
+
+			// click on Login button
+			System.out.println("Clicking on Login Button");
+			String xpath = xpathIDMap.get("Logon_Id");
+
+			webDriver.findElement(By.xpath(xpath)).click();
+			
+
+			WebElement element = webDriver.findElement(By.id(xpathIDMap.get("SignOff_Id")));
+			if (element != null) {
+				reportStatus = Constants.PASS_REPORT;
+			}
+		} catch (Exception e) {
+			reportStatus = Constants.FAIL_SEMICOLON + "Could not login in Cookied Mode. ";
+			e.printStackTrace();
+		}
+		return reportStatus;
+
 	}
 
 }

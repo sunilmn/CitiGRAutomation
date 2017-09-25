@@ -16,11 +16,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.openqa.selenium.WebDriver;
 import org.testng.annotations.Test;
 
+import com.citi.fileActivity.ImageFilesOperations;
 import com.citi.fileActivity.ExcelRead;
 import com.citi.fileActivity.HTMLReportGenerator;
-import com.citi.fileActivity.ImageFilesOperations;
+import com.citi.fileActivity.OutputOperations;
+import com.citi.testCase.EntryMode;
+import com.citi.testCase.MegaSubMenu;
+import com.citi.testCase.MyAccount;
+import com.citi.testCase.MyProfile;
+import com.citi.util.Constants;
 
 public class CitiMain {
 
@@ -170,8 +177,17 @@ public class CitiMain {
 					break;
 					
 				case "Logged-in Mode - FAQ and Contact Us":
-					auxiliary.FaqContactUs(executableRowsList, testCaseName);
+					auxiliary.runFaqContactUs(executableRowsList, testCaseName);
 					break;
+				
+				case "OBO Mode Login":
+					auxiliary.runOBOLogin(executableRowsList, testCaseName);
+					break;
+					
+				case "Cookied Mode Login":
+					auxiliary.runCookiedLogin(executableRowsList, testCaseName);
+					break;
+				
 
 				default:
 					break;

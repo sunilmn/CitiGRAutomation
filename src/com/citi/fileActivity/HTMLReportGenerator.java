@@ -212,11 +212,11 @@ public class HTMLReportGenerator {
 						+ "<td align=\"center\" bgcolor=\"Bisque\"><b>" + eachLineArray[6]+ "</b></td>"
 						+ "<td align=\"left\" bgcolor=\"Bisque\"><b>");
 				String  descriptionArray[]=eachLineArray[7].toString().split(Constants.HASH);
-				
-				for (int j = 0; j < descriptionArray.length; j++) {
-					htmlStringBuilder.append(""							
-						+(j+1)+") "+ descriptionArray[j] +"<br>"); 
-					
+
+				if (!descriptionArray[0].equals("-")) {
+					for (int j = 0; j < descriptionArray.length; j++) {
+						htmlStringBuilder.append((j + 1) + ") " + descriptionArray[j] + "<br>");
+					}
 				}
 			}
 			htmlStringBuilder.append("</b></td></tr></body></html>");	
