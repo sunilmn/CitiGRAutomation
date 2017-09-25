@@ -447,14 +447,15 @@ public class CitiMainAuxiliary {
 				    //click on Help->FAQ and check if page loads
 					reportStatus = faqContactUs.checkHelpAndFaqPage(webDriver, eachRowMap);
 					if (reportStatus.contains("Pass")) {
-						
-						reportStatus = faqContactUs.intialCommonHelpFaqContactUS(webDriver, eachRowMap, Constants.FAQ);
+						//Validate Default data on FAQ Page 
+						reportStatus = faqContactUs.defaultCategoryValidationFaqPage(webDriver, eachRowMap, Constants.FAQ);
 						if (reportStatus.contains("Fail")) {
 							reportCompositeFailFlag = true;
 							String reportStatusArray[] = reportStatus.split(";");
 							compositeDetails += reportStatusArray[1];
 						}
 						
+						//Compare the Categories on Left side in Navigation.
 						reportStatus = faqContactUs.compareCategoryList(webDriver, eachRowMap);
 						if (reportStatus.contains("Fail")) {
 							reportCompositeFailFlag = true;
@@ -462,6 +463,7 @@ public class CitiMainAuxiliary {
 							compositeDetails += reportStatusArray[1];
 						}
 
+						//Compare each Categories Details.
 						reportStatus = faqContactUs.checkEachCategoryDetail(webDriver, eachRowMap);
 						if (reportStatus.contains("Fail")) {
 							reportCompositeFailFlag = true;
